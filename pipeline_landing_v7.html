@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline Intelligence — Signal Driven Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg:      #080A0E;
+  --surface: #0D1017;
+  --card:    #111520;
+  --border:  #1C2235;
+  --border2: #243048;
+  --teal:    #00C896;
+  --teal2:   #00A878;
+  --teal3:   #007A58;
+  --white:   #F0F4FF;
+  --gray:    #5A6480;
+  --gray2:   #8A95B0;
+  --coral:   #FF5A5A;
+  --ff-head: 'Bebas Neue', sans-serif;
+  --ff-mono: 'DM Mono', monospace;
+  --ff-body: 'DM Sans', sans-serif;
+}
+
+/* ── RESET ── */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background:var(--bg);
+  color:var(--white);
+  font-family:var(--ff-body);
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* ── CURSOR ── */
+.cursor {
+  position:fixed; width:10px; height:10px;
+  background:var(--teal); border-radius:50%;
+  pointer-events:none; z-index:9999;
+  transform:translate(-50%,-50%);
+  transition:transform .1s, width .2s, height .2s, opacity .2s;
+  mix-blend-mode:screen;
+}
+.cursor-ring {
+  position:fixed; width:36px; height:36px;
+  border:1px solid rgba(0,200,150,.4); border-radius:50%;
+  pointer-events:none; z-index:9998;
+  transform:translate(-50%,-50%);
+  transition:transform .18s ease-out, width .2s, height .2s;
+}
+body:hover .cursor { opacity:1; }
+
+/* ── GRID OVERLAY ── */
+body::before {
+  content:''; position:fixed; inset:0; z-index:0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:60px 60px;
+  opacity:.18;
+  pointer-events:none;
+}
+
+/* ── NAV ── */
+nav {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 48px;
+  background:rgba(8,10,14,.8);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.nav-logo {
+  font-family:var(--ff-mono); font-size:12px; font-weight:500;
+  color:var(--teal); letter-spacing:.12em; text-transform:uppercase;
+  display:flex; align-items:center; gap:10px;
+}
+.nav-logo::before {
+  content:''; display:block; width:8px; height:8px;
+  background:var(--teal); border-radius:50%;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { box-shadow:0 0 0 0 rgba(0,200,150,.4); }
+  50% { box-shadow:0 0 0 8px rgba(0,200,150,0); }
+}
+.nav-links { display:flex; align-items:center; gap:32px; }
+.nav-links a {
+  font-family:var(--ff-mono); font-size:10px; font-weight:500;
+  color:var(--gray2); text-decoration:none; letter-spacing:.08em;
+  text-transform:uppercase; transition:color .2s;
+}
+.nav-links a:hover { color:var(--teal); }
+.nav-cta {
+  font-family:var(--ff-mono); font-size:10px; font-weight:500;
+  color:var(--bg); background:var(--teal); padding:9px 20px;
+  letter-spacing:.08em; text-transform:uppercase; text-decoration:none;
+  transition:background .2s;
+}
+.nav-cta:hover { background:var(--teal2); }
+
+/* ── SECTIONS ── */
+section { position:relative; z-index:1; }
+
+/* ── HERO ── */
+.hero {
+  min-height:100vh; display:flex; flex-direction:column;
+  justify-content:flex-end; padding:0 48px 80px;
+  overflow:hidden;
+}
+
+.hero-eyebrow {
+  font-family:var(--ff-mono); font-size:11px; color:var(--teal);
+  letter-spacing:.2em; text-transform:uppercase; margin-bottom:24px;
+  display:flex; align-items:center; gap:12px;
+  opacity:0; animation:fadeUp .8s .2s forwards;
+}
+.hero-eyebrow::before {
+  content:''; display:block; width:40px; height:1px; background:var(--teal);
+}
+
+.hero-headline {
+  font-family:var(--ff-head); font-size:clamp(80px, 12vw, 180px);
+  line-height:.92; letter-spacing:-.01em;
+  color:var(--white); margin-bottom:8px;
+  opacity:0; animation:fadeUp .8s .35s forwards;
+}
+.hero-headline .accent { color:var(--teal); }
+.hero-headline .dim { color:var(--gray); }
+
+.hero-sub-row {
+  display:flex; align-items:flex-end; justify-content:space-between;
+  margin-top:40px; gap:40px;
+  opacity:0; animation:fadeUp .8s .55s forwards;
+}
+.hero-sub {
+  max-width:480px;
+  font-size:15px; line-height:1.7; color:var(--gray2); font-weight:300;
+}
+.hero-sub strong { color:var(--white); font-weight:500; }
+
+.hero-actions { display:flex; flex-direction:column; align-items:flex-end; gap:16px; flex-shrink:0; }
+.btn-primary {
+  display:inline-block; padding:16px 36px;
+  font-family:var(--ff-mono); font-size:11px; font-weight:500;
+  letter-spacing:.12em; text-transform:uppercase; text-decoration:none;
+  color:var(--bg); background:var(--teal);
+  position:relative; overflow:hidden; transition:color .3s;
+}
+.btn-primary::after {
+  content:''; position:absolute; inset:0;
+  background:var(--white); transform:translateX(-101%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+}
+.btn-primary:hover::after { transform:translateX(0); }
+.btn-primary:hover { color:var(--bg); }
+.btn-primary span { position:relative; z-index:1; }
+
+.btn-ghost {
+  display:inline-block; padding:15px 36px;
+  font-family:var(--ff-mono); font-size:11px; font-weight:500;
+  letter-spacing:.12em; text-transform:uppercase; text-decoration:none;
+  color:var(--gray2); border:1px solid var(--border2);
+  transition:border-color .2s, color .2s;
+}
+.btn-ghost:hover { border-color:var(--teal); color:var(--teal); }
+
+.hero-stat-strip {
+  position:absolute; right:48px; top:50%; transform:translateY(-50%);
+  display:flex; flex-direction:column; gap:2px;
+  opacity:0; animation:fadeIn .8s .7s forwards;
+}
+.hero-stat {
+  display:flex; flex-direction:column; align-items:flex-end;
+  padding:20px 24px; border:1px solid var(--border);
+  background:rgba(13,16,23,.6); backdrop-filter:blur(10px);
+  min-width:160px;
+}
+.hero-stat-val {
+  font-family:var(--ff-head); font-size:52px; line-height:1;
+  color:var(--teal);
+}
+.hero-stat-label {
+  font-family:var(--ff-mono); font-size:8px; color:var(--gray);
+  letter-spacing:.12em; text-transform:uppercase; margin-top:4px;
+}
+
+/* large decorative text behind hero */
+.hero-bg-text {
+  position:absolute; bottom:-20px; left:-10px;
+  font-family:var(--ff-head); font-size:clamp(120px,20vw,300px);
+  color:transparent; -webkit-text-stroke:1px rgba(255,255,255,.04);
+  white-space:nowrap; pointer-events:none; user-select:none;
+  z-index:0;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(30px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity:0; }
+  to   { opacity:1; }
+}
+
+/* ── TICKER ── */
+.ticker-wrap {
+  border-top:1px solid var(--border); border-bottom:1px solid var(--border);
+  padding:14px 0; overflow:hidden; background:var(--surface);
+}
+.ticker {
+  display:flex; gap:0; white-space:nowrap;
+  animation:ticker 30s linear infinite;
+}
+.ticker-item {
+  font-family:var(--ff-mono); font-size:10px; color:var(--gray);
+  letter-spacing:.1em; text-transform:uppercase; padding:0 48px;
+  display:flex; align-items:center; gap:24px;
+}
+.ticker-item .dot { color:var(--teal); font-size:16px; line-height:0; }
+@keyframes ticker {
+  from { transform:translateX(0); }
+  to   { transform:translateX(-50%); }
+}
+
+/* ── PROBLEM SECTION ── */
+.problem { padding:120px 48px; }
+.section-label {
+  font-family:var(--ff-mono); font-size:10px; color:var(--teal);
+  letter-spacing:.2em; text-transform:uppercase; margin-bottom:48px;
+  display:flex; align-items:center; gap:16px;
+}
+.section-label::after { content:''; flex:1; height:1px; background:var(--border); max-width:120px; }
+
+.problem-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); }
+.problem-card {
+  background:var(--card); padding:48px;
+  transition:background .3s;
+}
+.problem-card:hover { background:#141820; }
+.problem-num {
+  font-family:var(--ff-head); font-size:80px; color:var(--border2);
+  line-height:1; margin-bottom:24px; transition:color .3s;
+}
+.problem-card:hover .problem-num { color:var(--teal3); }
+.problem-title {
+  font-family:var(--ff-head); font-size:32px; color:var(--white);
+  line-height:1.1; margin-bottom:16px; letter-spacing:.02em;
+}
+.problem-body { font-size:14px; line-height:1.8; color:var(--gray2); font-weight:300; }
+
+/* ── SOLUTION / SIGNAL SECTION ── */
+.solution { padding:120px 48px; }
+.solution-head {
+  display:grid; grid-template-columns:1fr 1fr; gap:80px;
+  align-items:end; margin-bottom:80px;
+}
+.solution-headline {
+  font-family:var(--ff-head); font-size:clamp(48px,6vw,80px);
+  line-height:.95; letter-spacing:.01em;
+}
+.solution-headline .teal { color:var(--teal); }
+.solution-desc { font-size:14px; line-height:1.9; color:var(--gray2); font-weight:300; }
+.solution-desc strong { color:var(--white); font-weight:500; }
+
+/* signal type cards */
+.signal-grid { display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--border); margin-bottom:1px; }
+.signal-card {
+  background:var(--card); padding:32px 24px;
+  display:flex; flex-direction:column; gap:16px;
+  transition:background .3s, transform .3s;
+  cursor:default;
+}
+.signal-card:hover { background:#141820; transform:translateY(-4px); }
+.signal-icon { font-size:28px; }
+.signal-name {
+  font-family:var(--ff-mono); font-size:9px; color:var(--teal);
+  letter-spacing:.15em; text-transform:uppercase;
+}
+.signal-desc { font-size:13px; color:var(--gray2); line-height:1.6; font-weight:300; }
+.signal-example {
+  margin-top:auto; padding:10px 12px;
+  background:rgba(0,200,150,.06); border-left:2px solid var(--teal3);
+  font-family:var(--ff-mono); font-size:9px; color:var(--gray2); line-height:1.6;
+  font-style:italic;
+}
+
+/* ── SAMPLE DECK CARD ── */
+.deck-section { padding:0 48px 120px; }
+.deck-card {
+  background:var(--card); border:1px solid var(--border);
+  display:grid; grid-template-columns:1fr 1fr; gap:0;
+}
+.deck-left { padding:56px; border-right:1px solid var(--border); }
+.deck-badge {
+  font-family:var(--ff-mono); font-size:9px; color:var(--gray);
+  letter-spacing:.15em; text-transform:uppercase; margin-bottom:32px;
+  padding-bottom:20px; border-bottom:1px solid var(--border);
+  display:flex; justify-content:space-between; align-items:center;
+}
+.deck-badge-week { color:var(--teal); }
+.deck-company {
+  font-family:var(--ff-head); font-size:40px; color:var(--white);
+  letter-spacing:.04em; margin-bottom:8px;
+}
+.deck-company-meta {
+  font-family:var(--ff-mono); font-size:10px; color:var(--gray);
+  letter-spacing:.08em; margin-bottom:32px;
+}
+.deck-scores { display:flex; gap:16px; margin-bottom:32px; }
+.deck-score {
+  display:flex; flex-direction:column; align-items:center;
+  padding:16px 20px; border:1px solid var(--border);
+  min-width:80px;
+}
+.deck-score-val {
+  font-family:var(--ff-head); font-size:32px; color:var(--teal); line-height:1;
+}
+.deck-score-label {
+  font-family:var(--ff-mono); font-size:7px; color:var(--gray);
+  letter-spacing:.12em; text-transform:uppercase; margin-top:4px;
+}
+.deck-right { padding:56px; }
+.deck-field { margin-bottom:28px; }
+.deck-field-label {
+  font-family:var(--ff-mono); font-size:8px; color:var(--teal);
+  letter-spacing:.2em; text-transform:uppercase; margin-bottom:8px;
+}
+.deck-field-val { font-size:13px; color:var(--gray2); line-height:1.7; font-weight:300; }
+.deck-field-val strong { color:var(--white); font-weight:500; }
+.deck-outreach {
+  padding:20px; background:rgba(0,200,150,.06);
+  border-left:2px solid var(--teal);
+  font-family:var(--ff-mono); font-size:11px; color:var(--white);
+  line-height:1.6; font-style:italic;
+}
+
+/* ── HOW IT WORKS ── */
+.how { padding:120px 48px; background:var(--surface); border-top:1px solid var(--border); }
+.how-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--border); margin-top:64px; }
+.how-step { background:var(--card); padding:48px; position:relative; }
+.how-step-num {
+  font-family:var(--ff-head); font-size:120px; color:rgba(0,200,150,.06);
+  line-height:1; position:absolute; top:24px; right:24px;
+}
+.how-step-tag {
+  font-family:var(--ff-mono); font-size:9px; color:var(--gray);
+  letter-spacing:.15em; text-transform:uppercase; margin-bottom:24px;
+}
+.how-step-title {
+  font-family:var(--ff-head); font-size:36px; color:var(--white);
+  line-height:1.1; margin-bottom:16px;
+}
+.how-step-body { font-size:13px; line-height:1.8; color:var(--gray2); font-weight:300; }
+.how-step-items { margin-top:24px; display:flex; flex-direction:column; gap:8px; }
+.how-step-item {
+  display:flex; align-items:flex-start; gap:10px;
+  font-family:var(--ff-mono); font-size:10px; color:var(--gray2);
+}
+.how-step-item::before {
+  content:'→'; color:var(--teal); flex-shrink:0; line-height:1.5;
+}
+
+/* ── ROI SECTION ── */
+.roi { padding:120px 48px; }
+.roi-inner {
+  display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;
+}
+.roi-headline {
+  font-family:var(--ff-head); font-size:clamp(40px,5vw,64px);
+  line-height:.95; letter-spacing:.02em;
+}
+.roi-headline .teal { color:var(--teal); }
+.roi-cards { display:flex; flex-direction:column; gap:1px; background:var(--border); }
+.roi-card { background:var(--card); padding:28px 32px; display:flex; align-items:center; gap:24px; }
+.roi-card-val {
+  font-family:var(--ff-head); font-size:52px; color:var(--teal);
+  line-height:1; flex-shrink:0; min-width:120px;
+}
+.roi-card-content {}
+.roi-card-title { font-size:14px; color:var(--white); font-weight:500; margin-bottom:4px; }
+.roi-card-body { font-family:var(--ff-mono); font-size:10px; color:var(--gray); line-height:1.6; }
+
+/* ── TIERS ── */
+.tiers { padding:120px 48px; background:var(--surface); border-top:1px solid var(--border); }
+.tier-grid { display:grid; grid-template-columns:1fr 1fr; gap:1px; background:var(--border); margin-top:64px; }
+.tier-card {
+  background:var(--card); padding:56px;
+  position:relative; overflow:hidden;
+}
+.tier-card.featured { background:#0E1720; }
+.tier-card.featured::before {
+  content:'MOST POPULAR'; position:absolute; top:0; right:0;
+  font-family:var(--ff-mono); font-size:8px; letter-spacing:.15em;
+  color:var(--bg); background:var(--teal);
+  padding:6px 16px;
+}
+.tier-label {
+  font-family:var(--ff-mono); font-size:9px; color:var(--gray);
+  letter-spacing:.2em; text-transform:uppercase; margin-bottom:24px;
+}
+.tier-label.lite { color:var(--gray2); }
+.tier-label.full { color:var(--teal); }
+.tier-price {
+  font-family:var(--ff-head); font-size:72px; line-height:1;
+  color:var(--white); margin-bottom:4px;
+}
+.tier-price-sub {
+  font-family:var(--ff-mono); font-size:10px; color:var(--gray);
+  letter-spacing:.08em; margin-bottom:32px;
+}
+.tier-features { display:flex; flex-direction:column; gap:12px; margin-bottom:40px; }
+.tier-feature {
+  display:flex; align-items:flex-start; gap:12px;
+  font-size:13px; color:var(--gray2); font-weight:300; line-height:1.5;
+}
+.tier-feature-check { color:var(--teal); flex-shrink:0; font-weight:500; }
+.tier-feature-check.no { color:var(--border2); }
+.tier-cta {
+  display:block; padding:16px; text-align:center;
+  font-family:var(--ff-mono); font-size:10px; font-weight:500;
+  letter-spacing:.12em; text-transform:uppercase; text-decoration:none;
+  transition:all .2s;
+}
+.tier-cta.lite {
+  color:var(--gray2); border:1px solid var(--border2);
+}
+.tier-cta.lite:hover { border-color:var(--teal); color:var(--teal); }
+.tier-cta.full {
+  color:var(--bg); background:var(--teal);
+}
+.tier-cta.full:hover { background:var(--teal2); }
+.tier-note {
+  margin-top:16px; font-family:var(--ff-mono); font-size:9px;
+  color:var(--gray); text-align:center; letter-spacing:.06em;
+}
+
+/* ── FINAL CTA ── */
+.final-cta {
+  padding:160px 48px; text-align:center;
+  border-top:1px solid var(--border);
+  position:relative; overflow:hidden;
+}
+.final-cta::before {
+  content:''; position:absolute; inset:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 100%, rgba(0,200,150,.08) 0%, transparent 70%);
+  pointer-events:none;
+}
+.final-cta-eyebrow {
+  font-family:var(--ff-mono); font-size:10px; color:var(--teal);
+  letter-spacing:.2em; text-transform:uppercase; margin-bottom:32px;
+}
+.final-cta-headline {
+  font-family:var(--ff-head); font-size:clamp(60px,9vw,130px);
+  line-height:.9; letter-spacing:-.01em; margin-bottom:48px;
+}
+.final-cta-headline .teal { color:var(--teal); }
+.final-cta-sub {
+  font-size:15px; color:var(--gray2); max-width:500px; margin:0 auto 48px;
+  font-weight:300; line-height:1.7;
+}
+.final-cta-actions { display:flex; align-items:center; justify-content:center; gap:16px; flex-wrap:wrap; }
+
+/* ── FOOTER ── */
+footer {
+  border-top:1px solid var(--border); padding:32px 48px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.footer-logo { font-family:var(--ff-mono); font-size:10px; color:var(--gray); letter-spacing:.12em; text-transform:uppercase; }
+.footer-note { font-family:var(--ff-mono); font-size:9px; color:var(--gray); letter-spacing:.06em; }
+
+/* ── REVEAL ANIMATIONS ── */
+.reveal {
+  opacity:0; transform:translateY(24px);
+  transition:opacity .7s ease, transform .7s ease;
+}
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width:900px) {
+  nav { padding:16px 24px; }
+  .nav-links { display:none; }
+  .hero { padding:0 24px 64px; }
+  .hero-stat-strip { display:none; }
+  .hero-sub-row { flex-direction:column; align-items:flex-start; }
+  .hero-actions { align-items:flex-start; }
+  .problem, .solution, .deck-section, .how, .roi, .tiers, .final-cta { padding-left:24px; padding-right:24px; }
+  .problem-grid { grid-template-columns:1fr; }
+  .solution-head { grid-template-columns:1fr; gap:40px; }
+  .signal-grid { grid-template-columns:1fr 1fr; }
+  .deck-card { grid-template-columns:1fr; }
+  .deck-left { border-right:none; border-bottom:1px solid var(--border); }
+  .how-steps { grid-template-columns:1fr; }
+  .roi-inner { grid-template-columns:1fr; gap:48px; }
+  .tier-grid { grid-template-columns:1fr; }
+}
+
+/* ── LITE MODAL ── */
+.lite-modal {
+  display:none; position:fixed; inset:0; z-index:1000;
+  background:rgba(0,0,0,.85); backdrop-filter:blur(8px);
+  align-items:center; justify-content:center; padding:24px;
+}
+.lite-modal-box {
+  background:var(--card); border:1px solid var(--border2);
+  max-width:520px; width:100%; padding:48px;
+  position:relative;
+}
+.lite-modal-close {
+  position:absolute; top:16px; right:20px;
+  font-family:var(--ff-mono); font-size:18px; color:var(--gray);
+  cursor:pointer; background:none; border:none; line-height:1;
+}
+.lite-modal-close:hover { color:var(--white); }
+.lite-modal-label {
+  font-family:var(--ff-mono); font-size:10px; color:var(--teal);
+  letter-spacing:.2em; text-transform:uppercase; margin-bottom:16px;
+}
+.lite-modal-headline {
+  font-family:var(--ff-head); font-size:36px; color:var(--white);
+  line-height:1.1; margin-bottom:8px;
+}
+.lite-modal-sub {
+  font-size:13px; color:var(--gray2); font-weight:300;
+  line-height:1.7; margin-bottom:32px;
+}
+.lite-form { display:flex; flex-direction:column; gap:14px; }
+.lite-field {
+  display:flex; flex-direction:column; gap:6px;
+}
+.lite-field label {
+  font-family:var(--ff-mono); font-size:9px; color:var(--gray);
+  letter-spacing:.12em; text-transform:uppercase;
+}
+.lite-field input, .lite-field select {
+  background:var(--surface); border:1px solid var(--border2);
+  color:var(--white); padding:12px 14px;
+  font-family:var(--ff-body); font-size:13px;
+  outline:none; transition:border-color .2s;
+  -webkit-appearance:none;
+}
+.lite-field input:focus, .lite-field select:focus { border-color:var(--teal); }
+.lite-field input::placeholder { color:var(--gray); }
+.lite-field select option { background:var(--card); }
+.lite-submit {
+  margin-top:8px; padding:16px;
+  font-family:var(--ff-mono); font-size:10px; font-weight:500;
+  letter-spacing:.12em; text-transform:uppercase;
+  color:var(--bg); background:var(--teal); border:none;
+  cursor:pointer; transition:background .2s; width:100%;
+}
+.lite-submit:hover { background:var(--teal2); }
+.lite-form-note {
+  margin-top:12px; font-family:var(--ff-mono); font-size:9px;
+  color:var(--gray); text-align:center; letter-spacing:.06em;
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div class="cursor" id="cur"></div>
+<div class="cursor-ring" id="curRing"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Pipeline Intelligence</div>
+  <div class="nav-links">
+    <a href="#how">How It Works</a>
+    <a href="#signals">Signals</a>
+    <a href="#pricing">Pricing</a>
+  </div>
+  <a href="#pricing" class="nav-cta">Get Started</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-text">SIGNALS</div>
+
+  <div class="hero-eyebrow">Signal Driven Intelligence · Every Monday Before 8AM</div>
+
+  <div class="hero-headline">
+    Know who<br>
+    <span class="accent">to call</span><br>
+    <span class="dim">this week.</span>
+  </div>
+  <div style="font-family:var(--ff-mono);font-size:11px;color:var(--gray);letter-spacing:.06em;margin-top:16px;margin-bottom:0;">For specialist recruitment · executive search · corporate law · commercial insurance · fractional CFOs</div>
+
+  <div class="hero-sub-row">
+    <p class="hero-sub">
+      You're not losing deals because your message is bad.<br>
+      You're losing them because you're calling at the <strong>wrong time</strong>. Every Monday morning, we tell you exactly which companies in your market just raised money, hired a new VP, or posted a job — so you reach out <strong>when they're actually ready.</strong>
+    </p>
+    <div class="hero-actions">
+      <a href="#pricing" class="btn-primary"><span>See How It Works →</span></a>
+      <a href="#how" class="btn-ghost">See how it works</a>
+    </div>
+  </div>
+
+  <div class="hero-stat-strip">
+    <div class="hero-stat">
+      <div class="hero-stat-val">10</div>
+      <div class="hero-stat-label">Companies / Week</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">6</div>
+      <div class="hero-stat-label">Signal Types Tracked Daily</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">8AM</div>
+      <div class="hero-stat-label">Monday Delivery</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <!-- duplicated for seamless loop -->
+    <div class="ticker-item"><span class="dot">·</span> Funding Rounds <span class="dot">·</span> Leadership Hires <span class="dot">·</span> Catalyst Hires <span class="dot">·</span> Job Changes <span class="dot">·</span> Job Postings <span class="dot">·</span> Competitor Reviews <span class="dot">·</span> Funding Rounds <span class="dot">·</span> Leadership Hires <span class="dot">·</span> Catalyst Hires <span class="dot">·</span> Job Changes <span class="dot">·</span> Job Postings <span class="dot">·</span> Competitor Reviews <span class="dot">·</span> Funding Rounds <span class="dot">·</span> Leadership Hires <span class="dot">·</span> Catalyst Hires <span class="dot">·</span> Job Postings <span class="dot">·</span> Competitor Reviews <span class="dot">·</span></div>
+    <div class="ticker-item"><span class="dot">·</span> Funding Rounds <span class="dot">·</span> Leadership Hires <span class="dot">·</span> Catalyst Hires <span class="dot">·</span> Job Changes <span class="dot">·</span> Job Postings <span class="dot">·</span> Competitor Reviews <span class="dot">·</span> Funding Rounds <span class="dot">·</span> Leadership Hires <span class="dot">·</span> Catalyst Hires <span class="dot">·</span> Job Changes <span class="dot">·</span> Job Postings <span class="dot">·</span> Competitor Reviews <span class="dot">·</span> Funding Rounds <span class="dot">·</span> Leadership Hires <span class="dot">·</span> Catalyst Hires <span class="dot">·</span> Job Postings <span class="dot">·</span> Competitor Reviews <span class="dot">·</span></div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="section-label reveal">The Problem</div>
+  <div class="problem-grid reveal">
+    <div class="problem-card">
+      <div class="problem-num">01</div>
+      <div class="problem-title">A Timing Problem</div>
+      <div class="problem-body">You're reaching the right company at the wrong moment — or missing the moment entirely. The window is 2–4 weeks. You have no way of knowing when it opens.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">02</div>
+      <div class="problem-title">A Targeting Problem</div>
+      <div class="problem-body">Talking to firms that were never going to engage right now. Wrong moment, wrong situation. Your list is full of technically correct names who aren't in a buying window.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">03</div>
+      <div class="problem-title">A Visibility Problem</div>
+      <div class="problem-body">No way of knowing which firms changed this week. A new VP hired. A funding round closed. A competitor review posted. The signal exists — you just can't see it.</div>
+    </div>
+    <div class="problem-card">
+      <div class="problem-num">04</div>
+      <div class="problem-title">The Real Cost</div>
+      <div class="problem-body">You're solving this with headcount — asking talented people to spend their days on manual research instead of closing. Every week without signal intelligence is a week your team is doing work a system should handle.</div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<section class="solution" id="signals">
+  <div class="section-label reveal">The Intelligence</div>
+  <div class="solution-head reveal">
+    <div class="solution-headline">
+      Companies don't buy when<br>
+      <span class="teal">you're ready.</span><br>
+      They buy when<br>something happens.
+    </div>
+    <div class="solution-desc">
+      We monitor <strong>4 signal sources daily</strong> plus your existing network for job changes — and we detect <strong>predictive catalyst hires</strong> that tell you what's about to happen, not just what already did. Every trigger event is scored and turned into a ready-to-send outreach angle with a <strong>draft email you can copy and send.</strong> You open your inbox Monday morning and know <strong>exactly who to call first.</strong>
+    </div>
+  </div>
+  <div class="signal-grid reveal">
+    <div class="signal-card">
+      <div class="signal-icon">💰</div>
+      <div class="signal-name">Funding Round</div>
+      <div class="signal-desc">Budget just unlocked. Buying decisions accelerate. The window is 60 days post-raise.</div>
+      <div class="signal-example">"Series A closed 6 days ago. Hiring VP Sales and two AEs. New budget cycle starting Q1."</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-icon">👤</div>
+      <div class="signal-name">Leadership Hire</div>
+      <div class="signal-desc">New VP wants to make an impact. The window is 90 days. They are actively evaluating vendors.</div>
+      <div class="signal-example">"New CRO joined 3 weeks ago. Previously built pipeline at two SaaS companies. Buying window open."</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-icon">📋</div>
+      <div class="signal-name">Job Posting</div>
+      <div class="signal-desc">Open role reveals active pain. The problem is real and they are investing in solving it.</div>
+      <div class="signal-example">"Posted 3 SDR roles this week. Scaling the outbound function. Active pain with pipeline visibility."</div>
+    </div>
+    <div class="signal-card" style="border:1px solid rgba(0,200,150,.3);background:rgba(0,200,150,.04);">
+      <div class="signal-icon">🤝</div>
+      <div class="signal-name">Champion Tracking</div>
+      <div class="signal-desc">Someone your client knows just moved companies. That's not a cold lead — it's a warm reopener with built-in trust.</div>
+      <div class="signal-example">"Your placed candidate Sarah Chen just became VP Talent at a Series B company. She already trusts you."</div>
+    </div>
+    <div class="signal-card" style="border:1px solid rgba(0,200,150,.3);background:rgba(0,200,150,.04);">
+      <div class="signal-icon">⚡</div>
+      <div class="signal-name">Catalyst Hire</div>
+      <div class="signal-desc">A new hire who predicts what's coming next. CPO arrives → recruitment panel review. Head of M&A → legal needs. CEO with no CFO → fractional finance gap.</div>
+      <div class="signal-example">"Just hired Rebecca Torres as Head of M&A. She led 4 acquisitions at her last firm. Legal advisory needs likely within 90 days."</div>
+    </div>
+    <div class="signal-card">
+      <div class="signal-icon">📣</div>
+      <div class="signal-name">Competitor Review</div>
+      <div class="signal-desc">Publicly unhappy with their current solution. The door is open. The timing couldn't be better.</div>
+      <div class="signal-example">"G2 review 8 days ago: current provider 'lacks depth'. Actively looking for alternatives."</div>
+    </div>
+  </div>
+</section>
+
+<!-- SAMPLE DECK -->
+<section class="deck-section">
+  <div class="section-label reveal">What You Receive</div>
+  <div class="deck-card reveal">
+    <div class="deck-left">
+      <div class="deck-badge">
+        <span>Week of 3 Feb · Lead 1 of 10</span>
+        <span class="deck-badge-week">Monday 07:42AM</span>
+      </div>
+      <div class="deck-company">████████ Ltd</div>
+      <div class="deck-company-meta">Series A · £4.2M · FinTech · London</div>
+      <div class="deck-scores">
+        <div class="deck-score">
+          <div class="deck-score-val">98</div>
+          <div class="deck-score-label">Score</div>
+        </div>
+        <div class="deck-score">
+          <div class="deck-score-val">5/5</div>
+          <div class="deck-score-label">SQL Fit</div>
+        </div>
+      </div>
+      <div style="font-family:var(--ff-mono);font-size:9px;color:var(--gray);letter-spacing:.1em;text-transform:uppercase;margin-bottom:12px;">Stacked Signals</div>
+      <div style="font-size:13px;color:var(--gray2);font-weight:300;line-height:1.6;">Funding Round + Catalyst Hire</div>
+    </div>
+    <div class="deck-right">
+      <div class="deck-field">
+        <div class="deck-field-label">Why Now</div>
+        <div class="deck-field-val">Closed a <strong>£4.2M Series A</strong> 6 days ago AND just posted for a <strong>Chief People Officer</strong>. The funding unlocks budget. The CPO will overhaul the agency panel within 60 days. Window to influence the panel decision is the next 4–6 weeks.</div>
+      </div>
+      <div class="deck-field">
+        <div class="deck-field-label" style="color:var(--teal);">Catalyst Alert</div>
+        <div class="deck-field-val">New CPO arrival predicts a recruitment panel review. Acting now positions you <strong>before</strong> the review starts.</div>
+      </div>
+      <div class="deck-field">
+        <div class="deck-field-label">Ready-to-Send Email</div>
+        <div class="deck-outreach">"Congrats on the Series A — well deserved. I noticed you're also bringing in a CPO, which usually means the recruitment strategy is about to get an overhaul. We've placed 15 senior commercial hires for SaaS firms in the 6 months after their Series A — typically when hiring outpaces internal teams. Worth a chat before the new CPO starts building the panel?"</div>
+      </div>
+      <div style="margin-top:24px;font-family:var(--ff-mono);font-size:9px;color:var(--gray);letter-spacing:.08em;">Why-now. Catalyst alert. Draft email. Copy, paste, send. Every lead. Every Monday. Embedded in your inbox.</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="section-label reveal">How It Starts</div>
+  <div style="font-family:var(--ff-head);font-size:clamp(32px,4vw,52px);color:var(--white);margin-bottom:8px;" class="reveal">
+    30 minutes. Zero pounds. <span style="color:var(--teal);">One deck.</span>
+  </div>
+  <div class="how-steps reveal">
+    <div class="how-step">
+      <div class="how-step-num">01</div>
+      <div class="how-step-tag">This call · Last 15 minutes</div>
+      <div class="how-step-title">ICP Criteria Built Together</div>
+      <div class="how-step-body">Five questions. Fifteen minutes. We build your signal profile together — the exact companies we look for, the ones we never show you again.</div>
+      <div class="how-step-items">
+        <div class="how-step-item">Company size + geography</div>
+        <div class="how-step-item">Industry + buyer title</div>
+        <div class="how-step-item">Exclusion list — competitors, existing clients</div>
+        <div class="how-step-item">Your best recent win — so we find more like it</div>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">02</div>
+      <div class="how-step-tag">Days 1–6 · Behind the scenes</div>
+      <div class="how-step-title">I Do the Work</div>
+      <div class="how-step-body">Signals run across 4 sources plus your network's job changes. Leads get scored on signal strength and SQL fit. The why-now, outreach angle, and a draft email are written for every company. Deck arrives embedded in your inbox — no link to click.</div>
+      <div class="how-step-items">
+        <div class="how-step-item">4 signal sources + champion job-change tracking</div>
+        <div class="how-step-item">ICP filter + exclusion list applied</div>
+        <div class="how-step-item">Top 10 scored + ranked by urgency</div>
+        <div class="how-step-item">Draft outreach email written per lead</div>
+        <div class="how-step-item">You do nothing</div>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">03</div>
+      <div class="how-step-tag">Day 7 · Before 8AM</div>
+      <div class="how-step-title">Monday Deck Arrives</div>
+      <div class="how-step-body">You open your inbox and decide. If the leads are better than what you've been seeing, you pay for that week and we keep going. If not, you owe nothing.</div>
+      <div class="how-step-items">
+        <div class="how-step-item">10 companies · signal + why-now + draft email</div>
+        <div class="how-step-item">Champion alerts when your contacts change jobs</div>
+        <div class="how-step-item">Entire deck embedded in your email — no links</div>
+        <div class="how-step-item">Copy, paste, send</div>
+      </div>
+    </div>
+  </div>
+  <div style="margin-top:1px;padding:20px 32px;background:var(--surface);border-top:1px solid var(--border);">
+    <span style="font-family:var(--ff-mono);font-size:9px;color:var(--teal);letter-spacing:.12em;text-transform:uppercase;margin-right:14px;">LITE TIER</span>
+    <span style="font-size:13px;color:var(--gray2);font-weight:300;">On the Lite tier, step 01 happens via a 2-minute form instead of a call — everything else is identical. Your first deck still arrives Monday before 8AM.</span>
+  </div>
+</section>
+
+<!-- ROI -->
+<section class="roi">
+  <div class="section-label reveal">The ROI</div>
+  <div class="reveal" style="margin-bottom:48px;">
+    <div class="roi-headline">
+      One deal makes<br>£5k feel<br><span class="teal">trivial.</span>
+    </div>
+    <p style="margin-top:24px;font-size:13px;color:var(--gray2);font-weight:300;line-height:1.8;max-width:520px;">
+      The maths is simple. One closed deal from a Monday deck covers months of the service — often the entire year. Here's what that looks like across each vertical we work with.
+    </p>
+  </div>
+
+  <!-- ICP ROI TABLE -->
+  <div class="reveal" style="background:var(--card);border:1px solid var(--border);margin-bottom:1px;">
+    <!-- header -->
+    <div style="display:grid;grid-template-columns:2fr 1.2fr 1.2fr 1.6fr;background:var(--dark,#0D0D0D);border-bottom:1px solid var(--border);">
+      <div style="padding:14px 24px;font-family:var(--ff-mono);font-size:9px;color:var(--gray);letter-spacing:.14em;text-transform:uppercase;">Your Sector</div>
+      <div style="padding:14px 16px;font-family:var(--ff-mono);font-size:9px;color:var(--gray);letter-spacing:.14em;text-transform:uppercase;">Typical Deal</div>
+      <div style="padding:14px 16px;font-family:var(--ff-mono);font-size:9px;color:var(--gray);letter-spacing:.14em;text-transform:uppercase;">Months Covered</div>
+      <div style="padding:14px 16px;font-family:var(--ff-mono);font-size:9px;color:var(--gray);letter-spacing:.14em;text-transform:uppercase;">What That Means</div>
+    </div>
+    <!-- rows -->
+    <div style="display:grid;grid-template-columns:2fr 1.2fr 1.2fr 1.6fr;border-bottom:1px solid var(--border);transition:background .2s;" onmouseover="this.style.background='#141820'" onmouseout="this.style.background=''">
+      <div style="padding:20px 24px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:18px;">🎯</span>
+        <span style="font-size:14px;color:var(--white);font-weight:500;">Specialist Recruitment</span>
+      </div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--teal);line-height:1;">£30–40k</div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--white);line-height:1;">6–8 mo</div>
+      <div style="padding:20px 16px;font-size:12px;color:var(--gray2);font-weight:300;line-height:1.6;">One placement. The full year is paid before you've hit Q3.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1.2fr 1.2fr 1.6fr;border-bottom:1px solid var(--border);background:#0F1218;transition:background .2s;" onmouseover="this.style.background='#141820'" onmouseout="this.style.background='#0F1218'">
+      <div style="padding:20px 24px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:18px;">🔍</span>
+        <span style="font-size:14px;color:var(--white);font-weight:500;">Executive Search</span>
+      </div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--teal);line-height:1;">£50–80k</div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--white);line-height:1;">10–16 mo</div>
+      <div style="padding:20px 16px;font-size:12px;color:var(--gray2);font-weight:300;line-height:1.6;">One retained mandate covers the service for over a year.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1.2fr 1.2fr 1.6fr;border-bottom:1px solid var(--border);transition:background .2s;" onmouseover="this.style.background='#141820'" onmouseout="this.style.background=''">
+      <div style="padding:20px 24px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:18px;">⚖️</span>
+        <span style="font-size:14px;color:var(--white);font-weight:500;">Corporate Law</span>
+      </div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--teal);line-height:1;">£25–60k</div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--white);line-height:1;">5–12 mo</div>
+      <div style="padding:20px 16px;font-size:12px;color:var(--gray2);font-weight:300;line-height:1.6;">One new matter instruction. The ROI is there before the matter closes.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1.2fr 1.2fr 1.6fr;border-bottom:1px solid var(--border);background:#0F1218;transition:background .2s;" onmouseover="this.style.background='#141820'" onmouseout="this.style.background='#0F1218'">
+      <div style="padding:20px 24px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:18px;">🛡️</span>
+        <span style="font-size:14px;color:var(--white);font-weight:500;">Commercial Insurance</span>
+      </div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--teal);line-height:1;">£60–100k</div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--white);line-height:1;">12–20 mo</div>
+      <div style="padding:20px 16px;font-size:12px;color:var(--gray2);font-weight:300;line-height:1.6;">One mid-market account win. Nearly two years covered from a single client.</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2fr 1.2fr 1.2fr 1.6fr;transition:background .2s;" onmouseover="this.style.background='#141820'" onmouseout="this.style.background=''">
+      <div style="padding:20px 24px;display:flex;align-items:center;gap:12px;">
+        <span style="font-size:18px;">📊</span>
+        <span style="font-size:14px;color:var(--white);font-weight:500;">Fractional CFO</span>
+      </div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--teal);line-height:1;">£40–60k</div>
+      <div style="padding:20px 16px;font-family:var(--ff-head);font-size:28px;color:var(--white);line-height:1;">8–12 mo</div>
+      <div style="padding:20px 16px;font-size:12px;color:var(--gray2);font-weight:300;line-height:1.6;">One retained engagement. The annual fee covers the service with room to spare.</div>
+    </div>
+  </div>
+
+  <!-- bottom strip -->
+  <div class="reveal" style="background:var(--surface);border:1px solid var(--border);border-top:none;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+    <div style="font-family:var(--ff-mono);font-size:10px;color:var(--gray);letter-spacing:.08em;">
+      £5,000/month · Month-to-month · No contract · Cancel any time
+    </div>
+    <div style="display:flex;gap:32px;">
+      <div style="text-align:center;">
+        <div style="font-family:var(--ff-head);font-size:32px;color:var(--teal);line-height:1;">1</div>
+        <div style="font-family:var(--ff-mono);font-size:8px;color:var(--gray);letter-spacing:.1em;text-transform:uppercase;margin-top:4px;">Deal to break even</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--ff-head);font-size:32px;color:var(--teal);line-height:1;">8×</div>
+        <div style="font-family:var(--ff-mono);font-size:8px;color:var(--gray);letter-spacing:.1em;text-transform:uppercase;margin-top:4px;">Avg ROI across ICPs</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:var(--ff-head);font-size:32px;color:var(--teal);line-height:1;">£0</div>
+        <div style="font-family:var(--ff-mono);font-size:8px;color:var(--gray);letter-spacing:.1em;text-transform:uppercase;margin-top:4px;">Until you decide it works</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BD HIRE COMPARISON -->
+<section style="padding:120px 48px;border-top:1px solid var(--border);">
+  <div class="section-label reveal">The Real Comparison</div>
+  <div class="reveal" style="margin-bottom:48px;">
+    <div style="font-family:var(--ff-head);font-size:clamp(32px,4vw,56px);line-height:.95;color:var(--white);max-width:700px;">
+      Your alternative isn't<br>another tool.<br>
+      <span style="color:var(--teal);">It's another hire.</span>
+    </div>
+    <p style="margin-top:24px;font-size:14px;color:var(--gray2);font-weight:300;line-height:1.8;max-width:560px;">
+      Most firms in your position solve business development the same way: hire someone junior, give them a phone and a list, and hope. It works eventually — but the ramp is long, the results are inconsistent, and when they leave, you start from zero. Pipeline Intelligence isn't a replacement for great people. It's the system that makes sure opportunities never fall through the cracks.
+    </p>
+  </div>
+
+  <div class="reveal" style="background:var(--card);border:1px solid var(--border);">
+    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:16px 24px;"></div>
+      <div style="padding:16px 24px;font-family:var(--ff-mono);font-size:9px;color:var(--gray);letter-spacing:.14em;text-transform:uppercase;text-align:center;">Junior BD Hire</div>
+      <div style="padding:16px 24px;font-family:var(--ff-mono);font-size:9px;color:var(--teal);letter-spacing:.14em;text-transform:uppercase;text-align:center;">Pipeline Intelligence</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:16px 24px;font-size:13px;color:var(--gray2);">Annual cost</div>
+      <div style="padding:16px 24px;font-family:var(--ff-head);font-size:24px;color:var(--white);text-align:center;">£35–55K</div>
+      <div style="padding:16px 24px;font-family:var(--ff-head);font-size:24px;color:var(--teal);text-align:center;">£60K</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);">
+      <div style="padding:16px 24px;font-size:13px;color:var(--gray2);">Time to first output</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--white);text-align:center;">2–3 months</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--teal);text-align:center;">Monday</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:16px 24px;font-size:13px;color:var(--gray2);">Consistency</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--white);text-align:center;">Varies with morale, workload</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--teal);text-align:center;">Every Monday, 7AM, without fail</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr;border-bottom:1px solid var(--border);background:rgba(255,255,255,.01);">
+      <div style="padding:16px 24px;font-size:13px;color:var(--gray2);">Tracks your existing relationships</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--white);text-align:center;">If they remember</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--teal);text-align:center;">Automatic champion alerts</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr;border-bottom:1px solid var(--border);">
+      <div style="padding:16px 24px;font-size:13px;color:var(--gray2);">Improves over time</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--white);text-align:center;">With training and retention</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--teal);text-align:center;">Self-calibrating from your outcomes</div>
+    </div>
+    <div style="display:grid;grid-template-columns:2.5fr 1fr 1fr;">
+      <div style="padding:16px 24px;font-size:13px;color:var(--gray2);">If they leave</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--white);text-align:center;">Start from zero</div>
+      <div style="padding:16px 24px;font-size:13px;color:var(--teal);text-align:center;">Your data stays. System keeps running.</div>
+    </div>
+  </div>
+
+  <div class="reveal" style="margin-top:32px;max-width:600px;">
+    <p style="font-size:14px;color:var(--gray2);font-weight:300;line-height:1.8;">
+      The best BD professionals are worth every penny — and they do things no system can. But signal detection and lead qualification isn't one of those things. <strong style="color:var(--white);font-weight:500;">Give your people the intelligence. Let them focus on closing.</strong>
+    </p>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="tiers" id="pricing">
+  <div class="section-label reveal">Pricing</div>
+  <div style="font-family:var(--ff-head);font-size:clamp(32px,4vw,52px);color:var(--white);max-width:600px;" class="reveal">
+    Two ways in. <span style="color:var(--teal);">Both deliver Monday.</span>
+  </div>
+  <div class="tier-grid reveal">
+    <div class="tier-card">
+      <div class="tier-label lite">Pipeline Intelligence Lite</div>
+      <div class="tier-price">£500</div>
+      <div class="tier-price-sub">£500 first month · £1,500/month thereafter · no contract</div>
+      <div class="tier-features">
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> 5 signal-backed leads every Monday — in your inbox</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Signal type + why-now included</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Outreach angle + draft email per company</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> ICP set via 2-minute form — no call needed</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Month-to-month · cancel any time</div>
+        <div class="tier-feature"><span class="tier-feature-check no">—</span> No champion tracking or catalyst hire detection</div>
+        <div class="tier-feature"><span class="tier-feature-check no">—</span> No SQL scoring or self-calibrating model</div>
+        <div class="tier-feature"><span class="tier-feature-check no">—</span> No contact enrichment</div>
+      </div>
+      <a href="#lite-form" class="tier-cta lite" onclick="document.getElementById('lite-modal').style.display='flex';return false;">Get Started with Lite</a>
+      <div class="tier-note">2-minute form · then Stripe · Order by Wed midnight for Monday delivery</div>
+    </div>
+    <div class="tier-card featured">
+      <div class="tier-label full">Pipeline Intelligence Full</div>
+      <div class="tier-price">£5k</div>
+      <div class="tier-price-sub">Per month · Month-to-month · No long-term contract</div>
+      <div class="tier-features">
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> 10 signal-backed leads every Monday — embedded in your inbox</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> SQL scoring on every lead</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Full why-now paragraph per company</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Ready-to-send draft email per lead — copy, paste, send</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Champion tracking — alerts when your contacts change jobs</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Catalyst hire detection — predict demand before it appears</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Self-calibrating scoring — improves from your actual outcomes</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> ICP calibration call — 15 minutes, this week</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> Contact enrichment — name, title, email</div>
+        <div class="tier-feature"><span class="tier-feature-check">✓</span> First deck free — pay only if it's useful</div>
+      </div>
+      <a href="#" class="tier-cta full">Book Your Free Discovery Call</a>
+      <div class="tier-note">30 minutes · First deck free · No contract · Cancel any time</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section class="final-cta">
+  <div class="final-cta-eyebrow">Monday. Before 8AM.</div>
+  <div class="final-cta-headline reveal">
+    Monday.<br>
+    Before<br>
+    <span class="teal">8AM.</span>
+  </div>
+  <p class="final-cta-sub reveal">Your first deck. Built around everything you just told us. In your inbox Monday morning before 8AM. That's the promise.</p>
+  <div class="final-cta-actions reveal">
+    <a href="#" class="btn-primary"><span>Book Discovery Call →</span></a>
+    <a href="#" class="btn-ghost" onclick="document.getElementById('lite-modal').style.display='flex';return false;">Get Started with Lite — £500</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Pipeline Intelligence</div>
+  <div class="footer-note">Signal Driven Intelligence · Every Monday Before 8AM · Confidential</div>
+</footer>
+
+<script>
+// cursor
+const cur = document.getElementById('cur');
+const ring = document.getElementById('curRing');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top = e.clientY + 'px';
+  setTimeout(() => {
+    ring.style.left = e.clientX + 'px';
+    ring.style.top = e.clientY + 'px';
+  }, 60);
+});
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cur.style.width = '20px'; cur.style.height = '20px';
+    ring.style.width = '56px'; ring.style.height = '56px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cur.style.width = '10px'; cur.style.height = '10px';
+    ring.style.width = '36px'; ring.style.height = '36px';
+  });
+});
+
+// scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+
+<!-- LITE FORM MODAL -->
+<div class="lite-modal" id="lite-modal" onclick="if(event.target===this)this.style.display='none'">
+  <div class="lite-modal-box">
+    <button class="lite-modal-close" onclick="document.getElementById('lite-modal').style.display='none'">✕</button>
+    <div class="lite-modal-label">Pipeline Intelligence Lite</div>
+    <div class="lite-modal-headline">Two minutes.<br>Then Monday.</div>
+    <p class="lite-modal-sub">Tell us who you sell to. We'll find who's ready to buy. Order by Wednesday midnight for your first deck that Monday.</p>
+    <form class="lite-form" onsubmit="handleLiteSubmit(event)">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="lite-field">
+          <label>First Name</label>
+          <input type="text" name="first_name" placeholder="Your name" required>
+        </div>
+        <div class="lite-field">
+          <label>Company</label>
+          <input type="text" name="company" placeholder="Your firm" required>
+        </div>
+      </div>
+      <div class="lite-field">
+        <label>Work Email</label>
+        <input type="email" name="email" placeholder="you@yourfirm.com" required>
+      </div>
+      <div class="lite-field">
+        <label>Your Sector</label>
+        <select name="sector" required>
+          <option value="" disabled selected>Select your sector</option>
+          <option>Specialist Recruitment</option>
+          <option>Executive Search</option>
+          <option>Corporate Law</option>
+          <option>Commercial Insurance</option>
+          <option>Fractional CFO</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="lite-field">
+        <label>Geography You Sell Into</label>
+        <input type="text" name="geography" placeholder="e.g. UK, London, US East Coast" required>
+      </div>
+      <button type="submit" class="lite-submit">Continue to Payment →</button>
+    </form>
+    <div class="lite-form-note">£500 first month · £1,500/month thereafter · cancel any time</div>
+  </div>
+</div>
+
+<script>
+function handleLiteSubmit(e) {
+  e.preventDefault();
+  const data = Object.fromEntries(new FormData(e.target));
+  // Store for post-payment reference
+  localStorage.setItem('pi_lite_lead', JSON.stringify(data));
+  // Replace # with your actual Stripe payment link
+  window.location.href = 'https://buy.stripe.com/YOUR_LITE_LINK';
+}
+</script>
+
+</body>
+</html>
